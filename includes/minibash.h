@@ -1,7 +1,7 @@
 #ifndef MINIBASH_H
 # define MINIBASH_H
 
-# define STR 1
+# define WORD 1
 # define REDIR 2
 # define PIPE 3
 
