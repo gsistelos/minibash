@@ -14,18 +14,18 @@ typedef struct list
 	struct list*	next;
 }	list_t;
 
-typedef struct s_token
+typedef struct token
 {
 	char*	str;
 	int		type;
-}	t_token;
+}	token_t;
 
-typedef struct s_cmd
+typedef struct cmd
 {
 	char**	args;
 	int		input;
 	int		output;
-}	t_cmd;
+}	cmd_t;
 
 /* utils */
 void	lst_clear(list_t* lst, void (*f)(void*));
