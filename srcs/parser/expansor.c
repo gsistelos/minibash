@@ -7,36 +7,45 @@ static char* expand(char* str)
 	return strdup(str);
 }
 
-int expansor(list_t* tokens)
+static int validate_token(token_t* token, int* prev_type)
 {
-	token_t* token = tokens->content;
-	char* new_str = expand(token->str);
-	free(token->str);
-	token->str = new_str;
-	int prev_type = token->type;
-	tokens = tokens->next;
-
-	while (tokens) {
-		token = tokens->content;
-
-		if ((prev_type == REDIR && token->type != WORD)
-			|| (prev_type == PIPE && token->type == PIPE)) {
-			fprintf(stderr, "minibash: syntax error near unexpected token '%s'\n", token->str);
-			return 1;
-		}
-		new_str = expand(token->str);
-		if (new_str == NULL && prev_type == REDIR) {
-			fprintf(stderr, "minibash: %s: ambigous redirect\n", token->str);
-			return 1;
-		}
-		free(token->str);
-		token->str = new_str;
-		prev_type = token->type;
-		tokens = tokens->next;
-	}
-	if (prev_type != WORD) {
+	if ((*prev_type == REDIR && token->type != WORD)
+		|| (*prev_type == PIPE && token->type == PIPE)) {
 		fprintf(stderr, "minibash: syntax error near unexpected token '%s'\n", token->str);
 		return 1;
 	}
+	char* new_str = expand(token->str);
+	if (new_str == NULL && *prev_type == REDIR) {
+		fprintf(stderr, "minibash: %s: ambigous redirect\n", token->str);
+		return 1;
+	}
+	free(token->str);
+	token->str = new_str;
+	*prev_type = token->type;
+	return 0;
+}
+
+int expansor(list_t* tokens_lst)
+{
+	int prev_type = PIPE;
+
+	while (tokens_lst->next) {
+		if (validate_token(tokens_lst->content, &prev_type))
+			return 1;
+		tokens_lst = tokens_lst->next;
+	}
+
+	token_t* token = tokens_lst->content;
+	if (token->type != WORD) {
+		fprintf(stderr, "minibash: syntax error near unexpected token '%s'\n", token->str);
+		return 1;
+	}
+	char* new_str = expand(token->str);
+	if (new_str == NULL && prev_type == REDIR) {
+		fprintf(stderr, "minibash: %s: ambigous redirect\n", token->str);
+		return 1;
+	}
+	free(token->str);
+	token->str = new_str;
 	return 0;
 }

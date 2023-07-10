@@ -30,7 +30,7 @@ typedef struct cmd
 }	cmd_t;
 
 /* parser */
-int		expansor(list_t* tokens);
+int		expansor(list_t* tokens_lst);
 list_t*	lexer(char* str);
 list_t*	parser(char* str);
 
