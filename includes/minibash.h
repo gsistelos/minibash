@@ -31,6 +31,7 @@ typedef struct cmd
 
 /* parser */
 int		expansor(list_t* tokens_lst);
+list_t*	interpreter(list_t* tokens_lst);
 list_t*	lexer(char* str);
 list_t*	parser(char* str);
 

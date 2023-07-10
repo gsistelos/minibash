@@ -14,7 +14,7 @@ list_t* parser(char* str)
 		lst_clear(tokens_lst, free_token);
 		return NULL;
 	}
-	list_t* cmds = NULL;
+	list_t* cmds_lst = interpreter(tokens_lst);
 	lst_clear(tokens_lst, free_token);
-	return cmds;
+	return cmds_lst;
 }
