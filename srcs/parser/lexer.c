@@ -27,8 +27,10 @@ list_t* lexer(char* str)
 			len = 1;
 		else {
 			while (!isspace(str[len]) && !strchr("|><", str[len])) {
-				len += quotes_len(str + len);
-				len++;
+				if (str[len] == '\'' || str[len] == '\"')
+					len += quotes_len(str + len);
+				else
+					len++;
 			}
 		}
 
