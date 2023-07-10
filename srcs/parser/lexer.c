@@ -13,30 +13,33 @@ static token_t* new_token(char* str)
 	return token;
 }
 
+static size_t token_len(char* str)
+{
+	if (!strncmp(str, ">>", 2) || !strncmp(str, "<<", 2))
+		return 2;
+	else if (strchr("|><", *str))
+		return 1;
+	size_t len = 0;
+	while (!isspace(str[len]) && !strchr("|><", str[len])) {
+		len += quotes_len(str + len);
+		if (str[len] != '\0')
+			len++;
+	}
+	return len;
+}
+
 list_t* lexer(char* str)
 {
-	list_t* tokens = NULL;
+	list_t* tokens_lst = NULL;
 
 	while (isspace(*str))
 		str++;
 	while (*str) {
-		size_t len = 0;
-		if (!strncmp(str, ">>", 2) || !strncmp(str, "<<", 2))
-			len = 2;
-		else if (strchr("|><", *str))
-			len = 1;
-		else {
-			while (!isspace(str[len]) && !strchr("|><", str[len])) {
-				len += quotes_len(str + len);
-				if (str[len] != '\0')
-					len++;
-			}
-		}
-
-		lst_push(&tokens, lst_new(new_token(strndup(str, len))));
+		size_t len = token_len(str);
+		lst_push(&tokens_lst, lst_new(new_token(strndup(str, len))));
 		str += len;
 		while (isspace(*str))
 			str++;
 	}
-	return tokens;
+	return tokens_lst;
 }
