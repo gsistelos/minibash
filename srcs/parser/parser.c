@@ -9,10 +9,8 @@ static void free_token(void* content)
 
 list_t* parser(char* str)
 {
-	list_t* tokens = NULL;
+	list_t* tokens = lexer(str);
 	list_t* cmds = NULL;
-
-	tokens = lexer(str);
 	lst_clear(tokens, free_token);
 	return cmds;
 }
