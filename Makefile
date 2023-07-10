@@ -1,7 +1,8 @@
 NAME		=	minibash
 
 SRCS		=	$(addprefix srcs/, main.c \
-				$(addprefix utils/, lst_clear.c lst_last.c lst_new.c lst_push.c) \
+				$(addprefix parser/, lexer.c parser.c) \
+				$(addprefix utils/, lst_clear.c lst_last.c lst_new.c lst_push.c quotes_len.c) \
 				)
 
 OBJS		=	$(SRCS:.c=.o)
