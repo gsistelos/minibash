@@ -10,6 +10,10 @@ static void free_token(void* content)
 list_t* parser(char* str)
 {
 	list_t* tokens = lexer(str);
+	if (expansor(tokens)) {
+		lst_clear(tokens, free_token);
+		return NULL;
+	}
 	list_t* cmds = NULL;
 	lst_clear(tokens, free_token);
 	return cmds;
