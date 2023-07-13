@@ -36,6 +36,9 @@ static void redirect(char* str, int* input, int* output)
 
 static list_t* cmd_info(list_t* tokens_lst, char*** args, int* input, int* output)
 {
+	*input = 0;
+	*output = 1;
+
 	size_t i = args_len(tokens_lst);
 
 	args[0] = malloc(sizeof(char*) * (i + 1));
@@ -64,11 +67,12 @@ list_t* interpreter(list_t* tokens_lst)
 	char**	args = NULL;
 	int		input, output;
 
+	tokens_lst = cmd_info(tokens_lst, &args, &input, &output);
+	lst_push(&cmds_lst, lst_new(new_cmd(args, input, output)));
 	while (tokens_lst) {
+		tokens_lst = tokens_lst->next;
 		tokens_lst = cmd_info(tokens_lst, &args, &input, &output);
 		lst_push(&cmds_lst, lst_new(new_cmd(args, input, output)));
-		if (tokens_lst)
-			tokens_lst = tokens_lst->next;
 	}
 	return cmds_lst;
 }
