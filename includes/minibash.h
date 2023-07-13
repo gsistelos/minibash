@@ -35,6 +35,11 @@ list_t*	interpreter(list_t* tokens_lst);
 list_t*	lexer(char* str);
 list_t*	parser(char* str);
 
+/* test */
+void	print_cmds(list_t* cmds_lst);
+void	print_tokens(list_t* tokens_lst);
+
+
 /* utils */
 void	lst_clear(list_t* lst, void (*f)(void*));
 list_t*	lst_last(list_t* lst);
