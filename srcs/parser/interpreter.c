@@ -27,11 +27,50 @@ static size_t args_len(list_t* tokens_lst)
 	return len;
 }
 
-static void redirect(char* str, int* input, int* output)
+static int heredoc(char* end)
 {
-	(void)str;
-	*input = 0;
-	*output = 1;
+	int		fd[2];
+	char	buffer[4097];
+
+	pipe(fd);
+	size_t	line = 0;
+	while (1) {
+		write(STDOUT_FILENO, ">", 1);
+		int bytes_read = read(STDIN_FILENO, buffer, 4096);
+		if (bytes_read < 1) {
+			fprintf(stderr, "\nminibash: warning: here-document at line %li delimited by end-of-file (wanted '%s')\n", line, end);
+			break ;
+		}
+		buffer[bytes_read] = '\0';
+
+		if (buffer[bytes_read - 1] == '\n' && !strncmp(end, buffer, bytes_read - 1))
+			break ;
+		write(fd[1], buffer, bytes_read);
+		line++;
+	}
+	close(fd[1]);
+	return fd[0];
+}
+
+static int redirect(list_t* tokens_lst, int* input, int* output)
+{
+	char* redir = ((token_t*)tokens_lst->content)->str;
+	char* file = ((token_t*)tokens_lst->next->content)->str;
+
+	if (!strcmp(redir, ">>"))
+		*output = open(file, O_WRONLY | O_APPEND | O_CREAT, 0644);
+	else if (!strcmp(redir , "<<"))
+		*input = heredoc(file);
+	else if (redir[0] == '>')
+		*output = open(file, O_WRONLY | O_TRUNC | O_CREAT, 0644);
+	else
+		*input = open(file, O_RDONLY);
+
+	if (*input == -1 || *output == -1) {
+		fprintf(stderr, "minibash: %s: %s\n", file, strerror(errno));
+		return 1;
+	}
+	return 0;
 }
 
 static list_t* cmd_info(list_t* tokens_lst, char*** args, int* input, int* output)
@@ -49,8 +88,8 @@ static list_t* cmd_info(list_t* tokens_lst, char*** args, int* input, int* outpu
 			break ;
 
 		if (token->type == REDIR) {
+			redirect(tokens_lst, input, output);
 			tokens_lst = tokens_lst->next;
-			redirect(token->str, input, output);
 		}
 		else
 			args[0][i++] = strdup(token->str);

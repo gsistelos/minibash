@@ -9,6 +9,9 @@
 # include <stdio.h>
 # include <ctype.h>
 # include <string.h>
+# include <fcntl.h>
+# include <errno.h>
+# include <unistd.h>
 
 typedef struct list
 {
@@ -37,6 +40,7 @@ list_t*	parser(char* str);
 
 /* test */
 void	print_cmds(list_t* cmds_lst);
+void	print_fd(int fd);
 void	print_tokens(list_t* tokens_lst);
 
 

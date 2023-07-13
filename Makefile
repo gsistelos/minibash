@@ -2,7 +2,7 @@ NAME		=	minibash
 
 SRCS		=	$(addprefix srcs/, main.c \
 				$(addprefix parser/, expansor.c interpreter.c lexer.c parser.c) \
-				$(addprefix test/, print_cmds.c print_tokens.c) \
+				$(addprefix test/, print_cmds.c print_fd.c print_tokens.c) \
 				$(addprefix utils/, lst_clear.c lst_last.c lst_new.c lst_push.c quotes_len.c) \
 				)
 
