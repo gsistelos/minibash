@@ -11,21 +11,21 @@ int main(void) {
         if (line == NULL)
             break;
 
-        if (line[0] == '\0') {
+        char* line_start = skip_whitespaces(line);
+        if (line_start[0] == '\0') {
             free(line);
             continue;
         }
 
         add_history(line);
 
-        list_t* cmds_lst = parser(line);
+        list_t* cmds_lst = parser(line_start);
         free(line);
         if (cmds_lst == NULL)
             continue;
 
         int is_child = executor(cmds_lst);
         list_clear(cmds_lst, free_cmd);
-
         if (is_child)
             return 1;
     }

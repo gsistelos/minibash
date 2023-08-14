@@ -1,12 +1,12 @@
 NAME		=	minibash
 
 SRCS		=	$(addprefix srcs/, main.c \
-				$(addprefix executor/, call_execve.c executor_pipes.c executor.c) \
+				$(addprefix executor/, executor.c) \
 				$(addprefix parser/, expansor.c interpreter.c lexer.c parser.c) \
 				$(addprefix signal/, setup_signals.c) \
 				$(addprefix test/, print_cmds.c print_fd.c print_tokens.c) \
 				$(addprefix utils/,	expand.c free_cmd.c free_token.c get_cmd_path.c heredoc.c \
-									new_cmd.c new_token.c quotes_len.c safe_close.c) \
+									new_cmd.c new_token.c quotes_len.c safe_close.c skip_whitespaces.c) \
 				)
 
 OBJS		=	$(SRCS:.c=.o)

@@ -27,12 +27,6 @@ list_t* lexer(char* str) {
     list_t* tokens_lst = NULL;
     int prev_type = PIPE;
 
-    while (isspace(*str))
-        str++;
-
-    if (*str == '\0')
-        return NULL;
-
     while (*str) {
         size_t len = token_len(str);
         if (len == (size_t)-1) {
@@ -50,6 +44,7 @@ list_t* lexer(char* str) {
 
         token_t* token = new_token(token_str);
         if (token == NULL) {
+            free(token_str);
             list_clear(tokens_lst, free_token);
             perror("minibash: malloc");
             return NULL;
@@ -71,8 +66,7 @@ list_t* lexer(char* str) {
         }
 
         str += len;
-        while (isspace(*str))
-            str++;
+        str = skip_whitespaces(str);
     }
 
     if (prev_type != WORD) {

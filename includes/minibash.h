@@ -67,6 +67,7 @@ cmd_t* new_cmd(char** args, int input, int output);
 token_t* new_token(char* str);
 size_t quotes_len(char* str);
 void safe_close(int in, int out);
+char* skip_whitespaces(char* str);
 
 extern int g_status_code;
 
