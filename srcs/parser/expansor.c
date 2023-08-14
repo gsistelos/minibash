@@ -1,61 +1,34 @@
 #include "minibash.h"
 
-static char* expand(char* str) {
-    // TODO: expand $VARIABLES and remove quotes
-
-    if (!strcmp(str, "AMB"))
-        return NULL;
-
-    return strdup(str);
-}
-
-static int validate_token(token_t* token, int* prev_type) {
-    if ((*prev_type == REDIR && token->type != WORD) || (*prev_type == PIPE && token->type == PIPE)) {
-        fprintf(stderr, "minibash: syntax error near unexpected token '%s'\n", token->str);
-        return 1;
-    }
-
-    char* new_str = expand(token->str);
-    if (new_str == NULL && *prev_type == REDIR) {
-        fprintf(stderr, "minibash: %s: ambigous redirect\n", token->str);
-        return 1;
-    }
-
-    free(token->str);
-    token->str = new_str;
-    *prev_type = token->type;
-
-    return 0;
-}
-
+/*
+ * @brief Expand all the tokens in the list and check for ambigous redirects
+ * @param tokens_lst The list of tokens
+ * @return 0 on success, 1 on error
+ */
 int expansor(list_t* tokens_lst) {
-    // TOOD: check for memory allocation failures
-
     int prev_type = PIPE;
 
-    while (tokens_lst->next) {
-        if (validate_token(tokens_lst->content, &prev_type))
+    while (tokens_lst) {
+        token_t* token = tokens_lst->data;
+
+        if (token->type != WORD) {
+            tokens_lst = tokens_lst->next;
+            continue;
+        }
+
+        char* new_str = expand(token->str);
+        if (new_str == NULL && prev_type == REDIR) {
+            fprintf(stderr, "minibash: %s: ambigous redirect\n", token->str);
             return 1;
+        }
+
+        prev_type = token->type;
+
+        free(token->str);
+        token->str = new_str;
 
         tokens_lst = tokens_lst->next;
     }
-
-    // Exception for the last token
-
-    token_t* token = tokens_lst->content;
-    if (token->type != WORD) {
-        fprintf(stderr, "minibash: syntax error near unexpected token '%s'\n", token->str);
-        return 1;
-    }
-
-    char* new_str = expand(token->str);
-    if (new_str == NULL && prev_type == REDIR) {
-        fprintf(stderr, "minibash: %s: ambigous redirect\n", token->str);
-        return 1;
-    }
-
-    free(token->str);
-    token->str = new_str;
 
     return 0;
 }

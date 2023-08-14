@@ -1,8 +1,10 @@
 #include "minibash.h"
 
-int main(int argc, char** argv) {
-    (void)argc;
-    (void)argv;
+int g_status_code;
+
+int main(void) {
+    if (setup_signals())
+        return 1;
 
     while (1) {
         char* line = readline("minibash$ ");
@@ -17,9 +19,15 @@ int main(int argc, char** argv) {
         add_history(line);
 
         list_t* cmds_lst = parser(line);
-
-        lst_clear(cmds_lst, free_cmd);
         free(line);
+        if (cmds_lst == NULL)
+            continue;
+
+        int is_child = executor(cmds_lst);
+        list_clear(cmds_lst, free_cmd);
+
+        if (is_child)
+            return 1;
     }
 
     return 0;

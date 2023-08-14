@@ -2,7 +2,7 @@
 
 void print_cmds(list_t* cmds_lst) {
     while (cmds_lst) {
-        cmd_t* cmd = cmds_lst->content;
+        cmd_t* cmd = cmds_lst->data;
 
         for (size_t i = 0; cmd->args[i]; i++) {
             printf("%s | ", cmd->args[i]);

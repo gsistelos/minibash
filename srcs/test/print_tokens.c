@@ -2,7 +2,7 @@
 
 void print_tokens(list_t* tokens_lst) {
     while (tokens_lst) {
-        token_t* token = tokens_lst->content;
+        token_t* token = tokens_lst->data;
 
         printf("%s | ", token->str);
 

@@ -1,15 +1,17 @@
 #include "minibash.h"
 
-void free_cmd(void* content) {
-    if (content == NULL)
+/*
+ * @brief Frees a command
+ * @param data The command to free
+ * @note Used in list_free
+ **/
+void free_cmd(void* data) {
+    if (data == NULL)
         return;
 
-    cmd_t* cmd = content;
+    cmd_t* cmd = data;
 
-    for (size_t i = 0; cmd->args[i]; i++) {
-        free(cmd->args[i]);
-    }
-
-    free(cmd->args);
+    matrix_free((void**)cmd->args);
+    safe_close(cmd->input, cmd->output);
     free(cmd);
 }

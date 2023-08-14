@@ -18,36 +18,67 @@ static size_t token_len(char* str) {
     return len;
 }
 
+/*
+ * @brief Split the input string into a token list, checks for syntax errors
+ * @param str The input string
+ * @return A list of tokens, or NULL if an error occurred
+ */
 list_t* lexer(char* str) {
     list_t* tokens_lst = NULL;
+    int prev_type = PIPE;
 
     while (isspace(*str))
         str++;
 
+    if (*str == '\0')
+        return NULL;
+
     while (*str) {
         size_t len = token_len(str);
         if (len == (size_t)-1) {
+            list_clear(tokens_lst, free_token);
             fprintf(stderr, "minibash: syntax error: unclosed quotes\n");
-            lst_clear(tokens_lst, free_token);
             return NULL;
         }
 
-        token_t* token = new_token(strndup(str, len));
+        char* token_str = strndup(str, len);
+        if (token_str == NULL) {
+            list_clear(tokens_lst, free_token);
+            perror("minibash: malloc");
+            return NULL;
+        }
+
+        token_t* token = new_token(token_str);
         if (token == NULL) {
-            lst_clear(tokens_lst, free_token);
+            list_clear(tokens_lst, free_token);
+            perror("minibash: malloc");
             return NULL;
         }
 
-        if (lst_push(&tokens_lst, lst_new(token))) {
+        if ((prev_type == REDIR && token->type != WORD) || (prev_type == PIPE && token->type == PIPE)) {
+            list_clear(tokens_lst, free_token);
+            fprintf(stderr, "minibash: syntax error near unexpected token '%s'\n", token->str);
+            return NULL;
+        }
+
+        prev_type = token->type;
+
+        if (list_push_back(&tokens_lst, list_new(token))) {
             free_token(token);
-            lst_clear(tokens_lst, free_token);
+            list_clear(tokens_lst, free_token);
+            perror("minibash: malloc");
             return NULL;
         }
 
         str += len;
-
         while (isspace(*str))
             str++;
+    }
+
+    if (prev_type != WORD) {
+        list_clear(tokens_lst, free_token);
+        fprintf(stderr, "minibash: syntax error near unexpected token 'newline'\n");
+        return NULL;
     }
 
     return tokens_lst;

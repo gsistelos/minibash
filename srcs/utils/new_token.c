@@ -1,9 +1,12 @@
 #include "minibash.h"
 
+/*
+ * @brief Creates a new token
+ * @param str The string to create the token from
+ * @return The new token, NULL if an error occured
+ * @note token type is set according to the str
+ **/
 token_t* new_token(char* str) {
-    if (str == NULL)
-        return NULL;
-
     token_t* token = malloc(sizeof(token_t));
     if (token == NULL)
         return NULL;
