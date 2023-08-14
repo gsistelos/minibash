@@ -1,6 +1,6 @@
 #include "minibash.h"
 
-char* get_cmd_path(char* cmd) {
+char* get_path(char* cmd) {
     if (cmd[0] == '.' || cmd[0] == '/')
         return (strdup(cmd));
 

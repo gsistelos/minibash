@@ -35,9 +35,7 @@ typedef struct cmd_s {
 
 // executor
 
-int call_execve(cmd_t* cmd);
-int executor_pipes(list_t* cmds_lst);
-int executor(list_t* cmds_lst);
+pid_t executor(list_t* cmds_lst);
 
 // parser
 
@@ -61,7 +59,7 @@ void print_tokens(list_t* tokens_lst);
 char* expand(char* str);
 void free_cmd(void* cmd);
 void free_token(void* token);
-char* get_cmd_path(char* cmd);
+char* get_path(char* cmd);
 int heredoc(char* end);
 cmd_t* new_cmd(char** args, int input, int output);
 token_t* new_token(char* str);

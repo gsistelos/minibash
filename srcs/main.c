@@ -24,9 +24,9 @@ int main(void) {
         if (cmds_lst == NULL)
             continue;
 
-        int is_child = executor(cmds_lst);
+        pid_t pid = executor(cmds_lst);
         list_clear(cmds_lst, free_cmd);
-        if (is_child)
+        if (pid == 0)
             return 1;
     }
 

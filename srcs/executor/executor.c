@@ -2,104 +2,96 @@
 
 extern char** environ;
 
-static int setup_pipes(list_t* cmds_lst, size_t size) {
-    int fd[2];
-    int prev_fd = STDIN_FILENO;
-
-    for (size_t i = 0; i < size - 1; i++) {
-        if (pipe(fd) == -1) {
-            perror("minibash: pipe");
-            return 1;
-        }
-
-        cmd_t* cmd = cmds_lst->data;
-
-        if (cmd->input == STDIN_FILENO)
-            cmd->input = prev_fd;
-        if (cmd->output == STDOUT_FILENO)
-            cmd->output = fd[1];
-
-        prev_fd = fd[0];
-
-        cmds_lst = cmds_lst->next;
+/*
+ * @brief Execute the first command in the cmd list
+ * @param cmd_list The list of commands
+ * @param prev_pipe The previous pipe to read from
+ * @param pipe The current pipe
+ * @return 0 if the current process is the child, -1 if an error occured, otherwise the pid of the child
+ **/
+static pid_t exec_cmd(list_t* cmd_list, int* prev_pipe, int pipefd[2]) {
+    pid_t pid = fork();
+    if (pid == -1) {
+        perror("minibash: fork");
+        return -1;
     }
 
-    cmd_t* cmd = cmds_lst->data;
+    if (pid == 0) {
+        cmd_t* cmd = cmd_list->data;
 
-    if (cmd->input == STDIN_FILENO)
-        cmd->input = prev_fd;
+        close(pipefd[0]);
 
-    return 0;
-}
-
-static int call_dup2(int fd, int fd2) {
-    if (fd != fd2) {
-        if (dup2(fd, fd2) == -1) {
-            perror("minibash: dup2");
-            return 1;
+        if (cmd->input != STDIN_FILENO) {
+            dup2(cmd->input, STDIN_FILENO);
+            close(cmd->input);
+        } else if (*prev_pipe != -1) {
+            dup2(*prev_pipe, STDIN_FILENO);
+            close(*prev_pipe);
         }
-        close(fd);
+
+        if (cmd->output != STDOUT_FILENO) {
+            dup2(cmd->output, STDOUT_FILENO);
+            close(cmd->output);
+        } else if (cmd_list->next != NULL) {
+            dup2(pipefd[1], STDOUT_FILENO);
+        }
+
+        close(pipefd[1]);
+
+        char* path = get_path(cmd->args[0]);
+        if (path == NULL)
+            return 0;
+
+        execve(path, cmd->args, environ);
+        perror("minibash: execve");
+        return 0;
     }
-    return 0;
+
+    close(pipefd[1]);
+
+    if (*prev_pipe != -1)
+        close(*prev_pipe);
+
+    *prev_pipe = pipefd[0];
+
+    return pid;
 }
 
 /*
  * @brief Execute the commands in the cmd list
  * @param cmds_lst The list of commands
- * @return 1 if the current process is the child, 0 if it's the parent
+ * @return 0 if the current process is the child, 1 if it's the parent
  */
-int executor(list_t* cmds_lst) {
-    size_t size = list_size(cmds_lst);
+pid_t executor(list_t* cmd_list) {
+    int prev_pipe = -1;
+    size_t size = list_size(cmd_list);
 
-    if (setup_pipes(cmds_lst, size))
-        return 0;
+    pid_t* pid = malloc(sizeof(pid_t) * size);
 
-    pid_t* pids = malloc(sizeof(pid_t) * size);
-    if (pids == NULL) {
-        perror("minibash: malloc");
-        return 0;
-    }
+    size_t i = 0;
+    while (cmd_list) {
+        int pipefd[2];
+        pipe(pipefd);
 
-    for (size_t i = 0; i < size; i++) {
-        cmd_t* cmd = cmds_lst->data;
-
-        pids[i] = fork();
-        if (pids[i] == -1) {
-            perror("minibash: fork");
+        pid[i] = exec_cmd(cmd_list, &prev_pipe, pipefd);
+        if (pid[i] == 0) {
+            free(pid);
             return 0;
         }
 
-        if (pids[i] == 0) {
-            call_dup2(cmd->input, STDIN_FILENO);
-            call_dup2(cmd->output, STDOUT_FILENO);
-            signal(SIGQUIT, SIG_DFL);
-
-            list_clear(cmds_lst->next, free_cmd);
-
-            char* path = get_cmd_path(cmd->args[0]);
-            if (path == NULL)
-                return 1;
-
-            if (execve(path, cmd->args, environ) == -1) {
-                perror("minibash: execve");
-                return 1;
-            }
-        }
-
-        safe_close(cmd->input, cmd->output);
-
-        cmds_lst = cmds_lst->next;
+        cmd_list = cmd_list->next;
+        i++;
     }
 
     int status;
 
     for (size_t i = 0; i < size; i++) {
-        waitpid(pids[i], &status, 0);
+        waitpid(pid[i], &status, 0);
         if (WIFEXITED(status))
             g_status_code = WEXITSTATUS(status);
         else if (WIFSIGNALED(status))
             g_status_code = WTERMSIG(status) + 128;
     }
 
-    return 0;
+    return 1;
 }
