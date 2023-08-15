@@ -16,9 +16,9 @@ static pid_t exec_cmd(list_t* cmd_list, int* prev_pipe, int pipefd[2]) {
         return -1;
     }
 
-    if (pid == 0) {
-        cmd_t* cmd = cmd_list->data;
+    cmd_t* cmd = cmd_list->data;
 
+    if (pid == 0) {
         close(pipefd[0]);
 
         if (cmd->input != STDIN_FILENO) {
@@ -52,7 +52,13 @@ static pid_t exec_cmd(list_t* cmd_list, int* prev_pipe, int pipefd[2]) {
     if (*prev_pipe != -1)
         close(*prev_pipe);
 
-    *prev_pipe = pipefd[0];
+    if (cmd_list->next != NULL)
+        *prev_pipe = pipefd[0];
+
+    if (cmd->input != STDIN_FILENO)
+        close(cmd->input);
+    if (cmd->output != STDOUT_FILENO)
+        close(cmd->output);
 
     return pid;
 }
@@ -92,6 +98,8 @@ pid_t executor(list_t* cmd_list) {
         else if (WIFSIGNALED(status))
             g_status_code = WTERMSIG(status) + 128;
     }
+
+    free(pid);
 
     return 1;
 }

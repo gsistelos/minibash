@@ -12,6 +12,5 @@ void free_cmd(void* data) {
     cmd_t* cmd = data;
 
     matrix_free((void**)cmd->args);
-    safe_close(cmd->input, cmd->output);
     free(cmd);
 }
