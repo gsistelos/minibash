@@ -48,9 +48,11 @@ static int redirect(list_t* tokens_lst, int* input, int* output) {
 
     if (!strcmp(redir->str, ">>"))
         *output = open(file->str, O_WRONLY | O_APPEND | O_CREAT, 0644);
-    else if (!strcmp(redir->str, "<<"))
+    else if (!strcmp(redir->str, "<<")) {
         *input = heredoc(file->str);
-    else if (redir->str[0] == '>')
+        if (*input == -1)
+            return -1;
+    } else if (redir->str[0] == '>')
         *output = open(file->str, O_WRONLY | O_TRUNC | O_CREAT, 0644);
     else
         *input = open(file->str, O_RDONLY);
