@@ -33,9 +33,18 @@ typedef struct cmd_s {
     int output;
 } cmd_t;
 
+// builtin
+int builtin_exit(cmd_t* cmd);
+int builtin_test(cmd_t* cmd);
+void* get_builtin(cmd_t* cmd);
+
 // executor
 
 pid_t executor(list_t* cmds_lst);
+int execve_cmd(cmd_t* cmd);
+pid_t fork_exec(int (*exec_func)(cmd_t* cmd), cmd_t* cmd, int bridge_pipe);
+int set_pipes(list_t* cmds_lst, int* bridge_pipe);
+void wait_pids(pid_t* pid, size_t size);
 
 // parser
 

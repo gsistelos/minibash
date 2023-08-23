@@ -1,7 +1,8 @@
 NAME		=	minibash
 
 SRCS		=	$(addprefix srcs/, main.c \
-				$(addprefix executor/, executor.c) \
+				$(addprefix builtin/, builtin_exit.c builtin_test.c get_builtin.c) \
+				$(addprefix executor/, executor.c execve_cmd.c fork_exec.c set_pipes.c wait_pids.c) \
 				$(addprefix parser/, expansor.c interpreter.c lexer.c parser.c) \
 				$(addprefix signal/, setup_signals.c) \
 				$(addprefix test/, print_cmds.c print_fd.c print_tokens.c) \
