@@ -9,8 +9,10 @@ static size_t token_len(char* str) {
     size_t len = 0;
     while (!isspace(str[len]) && !strchr("|><", str[len])) {
         size_t quote_end = quotes_len(str + len);
-        if (quote_end == (size_t)-1)
+        if (quote_end == (size_t)-1) {
+            fprintf(stderr, "minibash: syntax error: unclosed quotes\n");
             return -1;
+        }
 
         len += quote_end + 1;
     }
@@ -31,7 +33,6 @@ list_t* lexer(char* str) {
         size_t len = token_len(str);
         if (len == (size_t)-1) {
             list_clear(tokens_lst, free_token);
-            fprintf(stderr, "minibash: syntax error: unclosed quotes\n");
             return NULL;
         }
 
