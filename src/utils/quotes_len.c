@@ -11,10 +11,10 @@ size_t quotes_len(char* str) {
 
     char find = str[0];
 
-    size_t len = strchrlen(str + 1, find);
+    size_t len = strchrlen(++str, find);
 
     if (str[len] == '\0')
         return -1;
 
-    return len;
+    return len + 1;
 }
