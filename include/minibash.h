@@ -49,6 +49,7 @@ void wait_pids(pid_t* pid, size_t size);
 
 // parser
 
+char* expand(char* str);
 int expansor(list_t* tokens_lst);
 list_t* interpreter(list_t* tokens_lst);
 list_t* lexer(char* str);
@@ -66,7 +67,6 @@ void print_tokens(list_t* tokens_lst);
 
 // utils
 
-char* expand(char* str);
 void free_cmd(void* cmd);
 void free_token(void* token);
 char* get_path(char* cmd);

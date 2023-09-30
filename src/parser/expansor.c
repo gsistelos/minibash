@@ -17,6 +17,11 @@ int expansor(list_t* tokens_lst) {
         }
 
         char* new_str = expand(token->str);
+        if (errno != 0) {
+            perror("minibash: malloc");
+            return 1;
+        }
+
         if (new_str == NULL && prev_type == REDIR) {
             fprintf(stderr, "minibash: %s: ambigous redirect\n", token->str);
             return 1;

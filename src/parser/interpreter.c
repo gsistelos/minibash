@@ -112,7 +112,7 @@ char** copy_args(list_t** tokens_lst, size_t len) {
 
         if (token->type == REDIR)
             *tokens_lst = (*tokens_lst)->next;
-        else {
+        else if (token->str != NULL) {
             args[i] = strdup(token->str);
             if (args[i] == NULL) {
                 matrix_free((void**)args);
