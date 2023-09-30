@@ -67,7 +67,7 @@ static size_t double_quotes_expansion(char* str, char** buf) {
     char* new_str = NULL;
 
     while (*str != '"') {
-        char* aux;
+        char* aux = NULL;
         size_t len;
 
         if (*str == '$')
@@ -117,7 +117,7 @@ char* expand(char* str) {
     char* new_str = NULL;
 
     while (*str) {
-        char* aux;
+        char* aux = NULL;
         size_t len;
 
         if (*str == '$')
