@@ -5,16 +5,18 @@
  * @param str The string to check
  * @return The length of the string between quotes, 0 if the string is not between quotes, -1 if the quotes are not closed
  **/
-size_t quotes_len(char* str) {
-    if (str[0] != '\'' && str[0] != '\"')
+ssize_t quotes_len(char* str) {
+    if (*str != '\'' && *str != '\"')
         return 0;
 
-    char find = str[0];
+    char find = *str;
 
-    size_t len = strchrlen(++str, find);
+    ssize_t len = 1;
+    while (str[len] && str[len] != find)
+        len++;
 
-    if (str[len] == '\0')
+    if (str[len] != find)
         return -1;
 
-    return len + 1;
+    return len;
 }

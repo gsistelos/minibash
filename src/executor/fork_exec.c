@@ -22,6 +22,7 @@ pid_t fork_exec(int (*exec_func)(cmd_t* cmd), cmd_t* cmd, int bridge_pipe) {
             dup2(cmd->input, STDIN_FILENO);
             close(cmd->input);
         }
+
         if (cmd->output != STDOUT_FILENO) {
             dup2(cmd->output, STDOUT_FILENO);
             close(cmd->output);

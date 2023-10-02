@@ -2,7 +2,7 @@
 
 pid_t run_single(list_t* cmds_lst) {
     int (*builtin)(cmd_t*) = get_builtin(cmds_lst->data);
-    if (builtin) {
+    if (builtin != NULL) {
         g_status_code = builtin(cmds_lst->data);
         return 1;
     }
@@ -19,14 +19,14 @@ pid_t run_multiple(list_t* cmds_lst, size_t size) {
     int bridge_pipe = -1;
 
     pid_t* pid = malloc(sizeof(pid_t) * size);
-    if (!pid) {
+    if (pid == NULL) {
         perror("minibash: malloc");
         return 1;
     }
 
     size_t i = 0;
     while (cmds_lst) {
-        if (set_pipes(cmds_lst, &bridge_pipe))
+        if (set_pipes(cmds_lst, &bridge_pipe) != 0)
             return 1;
 
         int (*exec_func)(cmd_t*) = get_builtin(cmds_lst->data);
@@ -52,7 +52,7 @@ pid_t run_multiple(list_t* cmds_lst, size_t size) {
  * @brief Execute the commands in the cmd list
  * @param cmds_lst The list of commands
  * @return 0 if the current process is the child, 1 if it's the parent
- */
+ **/
 pid_t executor(list_t* cmds_lst) {
     size_t size = list_size(cmds_lst);
 

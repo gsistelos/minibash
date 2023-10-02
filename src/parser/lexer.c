@@ -1,15 +1,19 @@
 #include "minibash.h"
 
-static size_t token_len(char* str) {
-    if (!strncmp(str, ">>", 2) || !strncmp(str, "<<", 2))
+/* @brief Get the length of the next token in a string
+ * @param str The string to get the token length from
+ * @return The length of the token, -1 on failure
+ **/
+static ssize_t token_len(char* str) {
+    if (strncmp(str, ">>", 2) == 0 || strncmp(str, "<<", 2) == 0)
         return 2;
-    else if (strchr("|><", *str))
+    if (strchr("|><", *str) != NULL)
         return 1;
 
-    size_t len = 0;
+    ssize_t len = 0;
     while (!isspace(str[len]) && !strchr("|><", str[len])) {
-        size_t quote_end = quotes_len(str + len);
-        if (quote_end == (size_t)-1) {
+        ssize_t quote_end = quotes_len(str + len);
+        if (quote_end == -1) {
             fprintf(stderr, "minibash: syntax error: unclosed quotes\n");
             return -1;
         }
@@ -21,17 +25,17 @@ static size_t token_len(char* str) {
 }
 
 /*
- * @brief Split the input string into a token list, checks for syntax errors
+ * @brief Split the input string into a token list
  * @param str The input string
- * @return A list of tokens, or NULL if an error occurred
- */
+ * @return A list of tokens, NULL on failure
+ **/
 list_t* lexer(char* str) {
     list_t* tokens_lst = NULL;
     int prev_type = PIPE;
 
     while (*str) {
-        size_t len = token_len(str);
-        if (len == (size_t)-1) {
+        ssize_t len = token_len(str);
+        if (len == -1) {
             list_clear(tokens_lst, free_token);
             return NULL;
         }
@@ -52,6 +56,7 @@ list_t* lexer(char* str) {
         }
 
         if ((prev_type == REDIR && token->type != WORD) || (prev_type == PIPE && token->type == PIPE)) {
+            free_token(token);
             list_clear(tokens_lst, free_token);
             fprintf(stderr, "minibash: syntax error near unexpected token '%s'\n", token->str);
             return NULL;
@@ -59,7 +64,7 @@ list_t* lexer(char* str) {
 
         prev_type = token->type;
 
-        if (list_push_back(&tokens_lst, list_new(token))) {
+        if (list_push_back(&tokens_lst, list_new(token)) != 0) {
             free_token(token);
             list_clear(tokens_lst, free_token);
             perror("minibash: malloc");

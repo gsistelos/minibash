@@ -16,7 +16,7 @@ int set_pipes(list_t* cmds_lst, int* bridge_pipe) {
     }
 
     int current_pipe[2];
-    if (pipe(current_pipe) == -1) {
+    if (pipe(current_pipe) != 0) {
         perror("minibash: pipe");
         return -1;
     }
@@ -25,6 +25,7 @@ int set_pipes(list_t* cmds_lst, int* bridge_pipe) {
         cmd->output = current_pipe[1];
     else
         close(current_pipe[1]);
+
     *bridge_pipe = current_pipe[0];
 
     return 0;

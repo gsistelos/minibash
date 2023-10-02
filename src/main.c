@@ -7,17 +7,26 @@ int main(void) {
         return 1;
 
     while (1) {
+        errno = 0;
+
         char* line = readline("minibash$ ");
+        if (errno != 0) {
+            perror("minibash: readline");
+            continue;
+        }
+
         if (line == NULL)
             break;
 
         char* line_start = skip_whitespaces(line);
-        if (line_start[0] == '\0') {
+        if (*line_start == '\0') {
             free(line);
             continue;
         }
 
         add_history(line);
+        if (errno != 0)
+            perror("minibash: add_history");
 
         list_t* cmds_lst = parser(line_start);
         free(line);

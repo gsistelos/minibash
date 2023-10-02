@@ -9,6 +9,9 @@ extern char** environ;
  **/
 int execve_cmd(cmd_t* cmd) {
     char* path = get_path(cmd->args[0]);
+    if (errno != 0)
+        return 1;
+
     if (path == NULL)
         return 1;
 

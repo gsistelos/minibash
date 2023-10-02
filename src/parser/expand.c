@@ -1,11 +1,13 @@
 #include "minibash.h"
 
 static int apply_expansion(char** new_str, char* aux) {
-    if (aux) {
+    if (aux != NULL) {
         char* tmp = strjoin(*new_str, aux);
         free(aux);
-        if (!tmp)
+        if (tmp == NULL) {
+            perror("minibash: malloc");
             return 1;
+        }
 
         free(*new_str);
         *new_str = tmp;
@@ -14,61 +16,79 @@ static int apply_expansion(char** new_str, char* aux) {
     return 0;
 }
 
-static size_t no_expansion(char* str, char** buf) {
-    size_t len = 0;
+static ssize_t no_expansion(char* str, char** buf) {
+    ssize_t len = 0;
     while (!strchr("$~'\"", str[len]))
-        ++len;
+        len++;
 
     *buf = strndup(str, len);
-    if (!*buf)
+    if (*buf == NULL) {
+        perror("minibash: malloc");
         return -1;
+    }
 
     return len;
 }
 
-static size_t env_expansion(char* str, char** buf) {
-    ++str;
+static ssize_t env_expansion(char* str, char** buf) {
+    str++;
 
-    size_t len = 0;
+    ssize_t len = 0;
     while (isalnum(str[len]) || str[len] == '_')
-        ++len;
+        len++;
 
     char* aux = strndup(str, len);
-    if (!aux)
+    if (aux == NULL) {
+        perror("minibash: malloc");
         return -1;
+    }
 
     char* env = getenv(aux);
     free(aux);
 
-    if (env)
-        *buf = strdup(env);
-    else
+    if (env == NULL)
         *buf = NULL;
+    else {
+        *buf = strdup(env);
+        if (*buf == NULL) {
+            perror("minibash: malloc");
+            return -1;
+        }
+    }
 
     return len + 1;
 }
 
-static size_t name_expansion(char** buf, char* name, size_t len) {
+static ssize_t name_expansion(char** buf, char* name, ssize_t len) {
     char* env = getenv(name);
 
-    if (env)
-        *buf = strdup(env);
-    else
+    if (env == NULL)
         *buf = NULL;
+    else {
+        *buf = strdup(env);
+        if (*buf == NULL) {
+            perror("minibash: malloc");
+            return -1;
+        }
+    }
 
     return len;
 }
 
-static size_t double_quotes_expansion(char* str, char** buf) {
-    ++str;
+static ssize_t double_quotes_expansion(char* str, char** buf) {
+    str++;
 
-    size_t total_len = 0;
+    ssize_t total_len = 0;
 
-    char* new_str = NULL;
+    char* new_str = strdup("");
+    if (new_str == NULL) {
+        perror("minibash: malloc");
+        return -1;
+    }
 
     while (*str != '"') {
         char* aux = NULL;
-        size_t len;
+        ssize_t len;
 
         if (*str == '$')
             len = env_expansion(str, &aux);
@@ -80,12 +100,10 @@ static size_t double_quotes_expansion(char* str, char** buf) {
         } else
             len = no_expansion(str, &aux);
 
-        if (errno != 0) {
-            perror("minibash: malloc");
+        if (len == -1)
             return -1;
-        }
 
-        if (apply_expansion(&new_str, aux))
+        if (apply_expansion(&new_str, aux) != 0)
             return -1;
 
         str += len;
@@ -97,28 +115,34 @@ static size_t double_quotes_expansion(char* str, char** buf) {
     return total_len + 2;
 }
 
-static size_t single_quotes_expansion(char* str, char** buf) {
-    ++str;
+static ssize_t single_quotes_expansion(char* str, char** buf) {
+    str++;
 
-    size_t len = 0;
+    ssize_t len = 0;
     while (str[len] != '\'')
-        ++len;
+        len++;
 
     char* new_str = strndup(str, len);
-    if (!new_str)
+    if (new_str == NULL) {
+        perror("minibash: malloc");
         return -1;
+    }
 
     *buf = new_str;
 
     return len + 2;
 }
 
+/* @brief Expand a string
+ * @param str The string to expand
+ * @return The expanded string on success, can be NULL, errno is set on error
+ **/
 char* expand(char* str) {
     char* new_str = NULL;
 
     while (*str) {
         char* aux = NULL;
-        size_t len;
+        ssize_t len;
 
         if (*str == '$')
             len = env_expansion(str, &aux);
@@ -131,12 +155,10 @@ char* expand(char* str) {
         else
             len = no_expansion(str, &aux);
 
-        if (errno != 0) {
-            perror("minibash: malloc");
+        if (len == -1)
             return NULL;
-        }
 
-        if (apply_expansion(&new_str, aux))
+        if (apply_expansion(&new_str, aux) != 0)
             return NULL;
 
         str += len;

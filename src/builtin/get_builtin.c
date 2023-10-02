@@ -6,9 +6,12 @@
  * @return A pointer to the builtin function or NULL if not a builtin
  **/
 void* get_builtin(cmd_t* cmd) {
-    if (!strcmp(cmd->args[0], "exit"))
+    if (cmd->args[0] == NULL)
+        return &builtin_null;
+
+    if (strcmp(cmd->args[0], "exit") == 0)
         return &builtin_exit;
-    else if (!strcmp(cmd->args[0], "test"))
+    if (strcmp(cmd->args[0], "test") == 0)
         return &builtin_test;
 
     return NULL;

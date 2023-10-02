@@ -36,6 +36,7 @@ typedef struct cmd_s {
 // builtin
 
 int builtin_exit(cmd_t* cmd);
+int builtin_null(cmd_t* cmd);
 int builtin_test(cmd_t* cmd);
 void* get_builtin(cmd_t* cmd);
 
@@ -72,7 +73,7 @@ void free_token(void* token);
 char* get_path(char* cmd);
 cmd_t* new_cmd(char** args, int input, int output);
 token_t* new_token(char* str);
-size_t quotes_len(char* str);
+ssize_t quotes_len(char* str);
 char* skip_whitespaces(char* str);
 
 extern int g_status_code;
