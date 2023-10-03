@@ -17,6 +17,8 @@ list_t* parser(char* str) {
         return NULL;
     }
 
+    g_status_code = 0;
+
     list_t* cmds_lst = interpreter(tokens_lst);
     list_clear(tokens_lst, free_token);
     if (cmds_lst == NULL) {

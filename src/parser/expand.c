@@ -30,8 +30,27 @@ static ssize_t no_expansion(char* str, char** buf) {
     return len;
 }
 
+static ssize_t question_mark_expansion(char** buf) {
+    char status_str[4];
+
+    sprintf(status_str, "%d", g_status_code);
+
+    char* aux = strdup(status_str);
+    if (aux == NULL) {
+        perror("minibash: malloc");
+        return -1;
+    }
+
+    *buf = aux;
+
+    return 2;
+}
+
 static ssize_t env_expansion(char* str, char** buf) {
     str++;
+
+    if (*str == '?')
+        return question_mark_expansion(buf);
 
     ssize_t len = 0;
     while (isalnum(str[len]) || str[len] == '_')
