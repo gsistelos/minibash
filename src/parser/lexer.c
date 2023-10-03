@@ -56,9 +56,9 @@ list_t* lexer(char* str) {
         }
 
         if ((prev_type == REDIR && token->type != WORD) || (prev_type == PIPE && token->type == PIPE)) {
-            free_token(token);
             list_clear(tokens_lst, free_token);
             fprintf(stderr, "minibash: syntax error near unexpected token '%s'\n", token->str);
+            free_token(token);
             return NULL;
         }
 
