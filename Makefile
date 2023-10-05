@@ -1,7 +1,8 @@
 NAME		=	minibash
 
 SRC			=	$(addprefix src/,		main.c \
-				$(addprefix builtin/,	builtin_exit.c builtin_null.c builtin_test.c get_builtin.c) \
+				$(addprefix builtin/,	builtin_env.c builtin_exit.c builtin_export.c builtin_null.c \
+										builtin_test.c builtin_unset.c get_builtin.c) \
 				$(addprefix executor/,	executor.c execve_cmd.c fork_exec.c set_pipes.c wait_pids.c) \
 				$(addprefix parser/,	expand.c expansor.c interpreter.c lexer.c parser.c) \
 				$(addprefix signal/,	setup_signals.c) \

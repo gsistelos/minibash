@@ -35,9 +35,12 @@ typedef struct cmd_s {
 
 // builtin
 
+int builtin_env(cmd_t* cmd);
 int builtin_exit(cmd_t* cmd);
+int builtin_export(cmd_t* cmd);
 int builtin_null(cmd_t* cmd);
 int builtin_test(cmd_t* cmd);
+int builtin_unset(cmd_t* cmd);
 void* get_builtin(cmd_t* cmd);
 
 // executor
@@ -77,5 +80,7 @@ ssize_t quotes_len(char* str);
 char* skip_whitespaces(char* str);
 
 extern int g_status_code;
+
+extern char** environ;
 
 #endif  // MINIBASH_H
