@@ -1,7 +1,5 @@
 #include "minibash.h"
 
-#define BUFFER_SIZE 4096
-
 /*
  * @brief Reads from stdin until the end of the heredoc is reached
  * @param end The end of the heredoc
@@ -9,33 +7,41 @@
  **/
 static int heredoc(char* end) {
     int fd[2];
-    char buffer[BUFFER_SIZE + 1];
 
-    if (pipe(fd) != 0)
+    if (pipe(fd) != 0) {
+        perror("minibash: pipe");
         return -1;
+    }
 
-    size_t line = 0;
-    while (1) {
-        if (write(STDOUT_FILENO, ">", 1) == -1)
+    for (size_t i = 0; 1; i++) {
+        char* line = readline(">");
+        if (errno != 0) {
+            perror("minibash: readline");
             return -1;
+        }
 
-        ssize_t bytes_read = read(STDIN_FILENO, buffer, BUFFER_SIZE);
-        if (bytes_read == -1)
-            return -1;
-        else if (bytes_read == 0) {
-            fprintf(stderr, "\nminibash: warning: here-document at line %li delimited by end-of-file (wanted '%s')\n", line, end);
+        if (line == NULL) {
+            fprintf(stderr, "\nminibash: warning: here-document at line %li delimited by end-of-file (wanted '%s')\n", i, end);
             break;
         }
 
-        buffer[bytes_read] = '\0';
-
-        if (buffer[bytes_read - 1] == '\n' && strncmp(end, buffer, bytes_read - 1) == 0)
+        if (strcmp(line, end) == 0) {
+            free(line);
             break;
+        }
 
-        if (write(fd[1], buffer, bytes_read) == -1)
+        if (write(fd[1], line, strlen(line)) == -1) {
+            free(line);
+            perror("minibash: write");
             return -1;
+        }
 
-        line++;
+        if (write(fd[1], "\n", 1) == -1) {
+            perror("minibash: write");
+            return -1;
+        }
+
+        free(line);
     }
 
     close(fd[1]);
@@ -43,9 +49,9 @@ static int heredoc(char* end) {
     return fd[0];
 }
 
-static int redirect(list_t* tokens_lst, int* input, int* output) {
-    token_t* redir = tokens_lst->data;
-    token_t* file = tokens_lst->next->data;
+static int redirect(list_t* token_list, int* input, int* output) {
+    token_t* redir = token_list->data;
+    token_t* file = token_list->next->data;
 
     if (strcmp(redir->str, ">>") == 0)
         *output = open(file->str, O_WRONLY | O_APPEND | O_CREAT, 0644);
@@ -68,26 +74,26 @@ static int redirect(list_t* tokens_lst, int* input, int* output) {
 
 /*
  * @brief Iterate over the token list until a pipe is found, setting the input and output
- * @param tokens_lst The token list
+ * @param token_list The token list
  * @param input A pointer to the input fd
  * @param output A pointer to the output fd
  * @return Quantity of non redirect tokens until the pipe or -1 if an error occured
  **/
-static ssize_t redirect_to_pipe(list_t* tokens_lst, int* input, int* output) {
+static ssize_t redirect_to_pipe(list_t* token_list, int* input, int* output) {
     ssize_t len = 0;
-    while (tokens_lst) {
-        token_t* token = tokens_lst->data;
+    while (token_list) {
+        token_t* token = token_list->data;
         if (token->type == PIPE)
             break;
 
         if (token->type == REDIR) {
-            if (redirect(tokens_lst, input, output) != 0)
+            if (redirect(token_list, input, output) != 0)
                 return -1;
-            tokens_lst = tokens_lst->next;
+            token_list = token_list->next;
         } else if (token->str != NULL)
             len++;
 
-        tokens_lst = tokens_lst->next;
+        token_list = token_list->next;
     }
 
     return len;
@@ -95,11 +101,11 @@ static ssize_t redirect_to_pipe(list_t* tokens_lst, int* input, int* output) {
 
 /*
  * @brief Copy the non redirect tokens from the token list to an array and walk the token list head to the next pipe or NULL
- * @param tokens_lst The token list
+ * @param token_list The token list
  * @param len The quantity of non redirect arguments to copy
  * @return The arguments array or NULL if an error occured
  **/
-char** copy_args(list_t** tokens_lst, ssize_t len) {
+char** copy_args(list_t** token_list, ssize_t len) {
     char** args = malloc(sizeof(char*) * (len + 1));
     if (args == NULL) {
         perror("minibash: malloc");
@@ -107,15 +113,15 @@ char** copy_args(list_t** tokens_lst, ssize_t len) {
     }
 
     size_t i = 0;
-    while (*tokens_lst) {
-        token_t* token = (*tokens_lst)->data;
+    while (*token_list) {
+        token_t* token = (*token_list)->data;
         if (token->type == PIPE) {
-            *tokens_lst = (*tokens_lst)->next;
+            *token_list = (*token_list)->next;
             break;
         }
 
         if (token->type == REDIR)
-            *tokens_lst = (*tokens_lst)->next;
+            *token_list = (*token_list)->next;
         else if (token->str != NULL) {
             args[i] = strdup(token->str);
             if (args[i] == NULL) {
@@ -126,7 +132,7 @@ char** copy_args(list_t** tokens_lst, ssize_t len) {
             i++;
         }
 
-        *tokens_lst = (*tokens_lst)->next;
+        *token_list = (*token_list)->next;
     }
 
     args[len] = NULL;
@@ -139,40 +145,40 @@ char** copy_args(list_t** tokens_lst, ssize_t len) {
  * @param tokens_list The token list
  * @return The cmd list or NULL if an error occured
  **/
-list_t* interpreter(list_t* tokens_lst) {
-    list_t* cmds_lst = NULL;
+list_t* interpreter(list_t* token_list) {
+    list_t* cmd_list = NULL;
 
-    while (tokens_lst) {
+    while (token_list) {
         int input = STDIN_FILENO;
         int output = STDOUT_FILENO;
 
-        ssize_t args_len = redirect_to_pipe(tokens_lst, &input, &output);
+        ssize_t args_len = redirect_to_pipe(token_list, &input, &output);
         if (args_len == -1) {
-            list_clear(cmds_lst, free_cmd);
+            list_clear(cmd_list, free_cmd);
             return NULL;
         }
 
-        char** args = copy_args(&tokens_lst, args_len);
+        char** args = copy_args(&token_list, args_len);
         if (args == NULL) {
-            list_clear(cmds_lst, free_cmd);
+            list_clear(cmd_list, free_cmd);
             return NULL;
         }
 
         cmd_t* cmd = new_cmd(args, input, output);
         if (cmd == NULL) {
             matrix_free((void**)args);
-            list_clear(cmds_lst, free_cmd);
+            list_clear(cmd_list, free_cmd);
             perror("minibash: malloc");
             return NULL;
         }
 
-        if (list_push_back(&cmds_lst, list_new(cmd)) != 0) {
+        if (list_push_back(&cmd_list, list_new(cmd)) != 0) {
             free_cmd(cmd);
-            list_clear(cmds_lst, free_cmd);
+            list_clear(cmd_list, free_cmd);
             perror("minibash: malloc");
             return NULL;
         }
     }
 
-    return cmds_lst;
+    return cmd_list;
 }

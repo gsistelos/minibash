@@ -152,7 +152,8 @@ static ssize_t single_quotes_expansion(char* str, char** buf) {
     return len + 2;
 }
 
-/* @brief Expand a string
+/*
+ * @brief Expand a string
  * @param str The string to expand
  * @return The expanded string on success, can be NULL, errno is set on error
  **/

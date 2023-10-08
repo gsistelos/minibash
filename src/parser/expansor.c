@@ -2,14 +2,14 @@
 
 /*
  * @brief Expand all the tokens->str in the list
- * @param tokens_lst The list of tokens
+ * @param token_list The list of tokens
  * @return 0 on success, 1 on error
  **/
-int expansor(list_t* tokens_lst) {
+int expansor(list_t* token_list) {
     int prev_type = PIPE;
 
-    while (tokens_lst) {
-        token_t* token = tokens_lst->data;
+    while (token_list) {
+        token_t* token = token_list->data;
 
         if (token->type == WORD) {
             char* new_str = expand(token->str);
@@ -26,7 +26,7 @@ int expansor(list_t* tokens_lst) {
         }
 
         prev_type = token->type;
-        tokens_lst = tokens_lst->next;
+        token_list = token_list->next;
     }
 
     return 0;

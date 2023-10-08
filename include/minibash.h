@@ -11,12 +11,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
 #include "libgs.h"
 
-enum token_type {
+enum token_type_e {
     WORD,
     REDIR,
     PIPE
@@ -35,27 +36,27 @@ typedef struct cmd_s {
 
 // builtin
 
+int builtin_cd(cmd_t* cmd);
 int builtin_env(cmd_t* cmd);
 int builtin_exit(cmd_t* cmd);
 int builtin_export(cmd_t* cmd);
 int builtin_null(cmd_t* cmd);
-int builtin_test(cmd_t* cmd);
 int builtin_unset(cmd_t* cmd);
-void* get_builtin(cmd_t* cmd);
+void* get_builtin(char* cmd);
 
 // executor
 
-pid_t executor(list_t* cmds_lst);
+pid_t executor(list_t* cmd_list);
 int execve_cmd(cmd_t* cmd);
 pid_t fork_exec(int (*exec_func)(cmd_t* cmd), cmd_t* cmd, int bridge_pipe);
-int set_pipes(list_t* cmds_lst, int* bridge_pipe);
+pid_t run_cmd(cmd_t* cmd);
 void wait_pids(pid_t* pid, size_t size);
 
 // parser
 
 char* expand(char* str);
-int expansor(list_t* tokens_lst);
-list_t* interpreter(list_t* tokens_lst);
+int expansor(list_t* token_list);
+list_t* interpreter(list_t* token_list);
 list_t* lexer(char* str);
 list_t* parser(char* str);
 
@@ -63,16 +64,10 @@ list_t* parser(char* str);
 
 int setup_signals(void);
 
-// test
-
-void print_cmds(list_t* cmds_lst);
-void print_fd(int fd);
-void print_tokens(list_t* tokens_lst);
-
 // utils
 
-void free_cmd(void* cmd);
-void free_token(void* token);
+void free_cmd(void* ptr);
+void free_token(void* ptr);
 char* get_path(char* cmd);
 cmd_t* new_cmd(char** args, int input, int output);
 token_t* new_token(char* str);

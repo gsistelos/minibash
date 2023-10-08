@@ -2,14 +2,14 @@
 
 /*
  * @brief Frees a command
- * @param data The command to free
+ * @param ptr The command to free
  * @note Used in list_free
  **/
-void free_cmd(void* data) {
-    if (data == NULL)
+void free_cmd(void* ptr) {
+    if (ptr == NULL)
         return;
 
-    cmd_t* cmd = data;
+    cmd_t* cmd = ptr;
 
     matrix_free((void**)cmd->args);
     free(cmd);

@@ -1,6 +1,6 @@
 #include "minibash.h"
 
-int g_status_code;
+int g_status_code = 0;
 
 int main(void) {
     if (setup_signals())
@@ -28,13 +28,13 @@ int main(void) {
         if (errno != 0)
             perror("minibash: add_history");
 
-        list_t* cmds_lst = parser(line_start);
+        list_t* cmd_list = parser(line_start);
         free(line);
-        if (cmds_lst == NULL)
+        if (cmd_list == NULL)
             continue;
 
-        pid_t pid = executor(cmds_lst);
-        list_clear(cmds_lst, free_cmd);
+        pid_t pid = executor(cmd_list);
+        list_clear(cmd_list, free_cmd);
         if (pid == 0)
             return 1;
     }

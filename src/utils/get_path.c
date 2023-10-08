@@ -1,5 +1,3 @@
-#include <sys/stat.h>
-
 #include "minibash.h"
 
 int validate_path_verbose(char* path) {

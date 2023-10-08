@@ -1,6 +1,7 @@
 #include "minibash.h"
 
-/* @brief Get the length of the next token in a string
+/*
+ * @brief Get the length of the next token in a string
  * @param str The string to get the token length from
  * @return The length of the token, -1 on failure
  **/
@@ -30,19 +31,19 @@ static ssize_t token_len(char* str) {
  * @return A list of tokens, NULL on failure
  **/
 list_t* lexer(char* str) {
-    list_t* tokens_lst = NULL;
+    list_t* token_list = NULL;
     int prev_type = PIPE;
 
     while (*str) {
         ssize_t len = token_len(str);
         if (len == -1) {
-            list_clear(tokens_lst, free_token);
+            list_clear(token_list, free_token);
             return NULL;
         }
 
         char* token_str = strndup(str, len);
         if (token_str == NULL) {
-            list_clear(tokens_lst, free_token);
+            list_clear(token_list, free_token);
             perror("minibash: malloc");
             return NULL;
         }
@@ -50,23 +51,23 @@ list_t* lexer(char* str) {
         token_t* token = new_token(token_str);
         if (token == NULL) {
             free(token_str);
-            list_clear(tokens_lst, free_token);
+            list_clear(token_list, free_token);
             perror("minibash: malloc");
             return NULL;
         }
 
         if ((prev_type == REDIR && token->type != WORD) || (prev_type == PIPE && token->type == PIPE)) {
-            list_clear(tokens_lst, free_token);
-            fprintf(stderr, "minibash: syntax error near unexpected token '%s'\n", token->str);
+            list_clear(token_list, free_token);
             free_token(token);
+            fprintf(stderr, "minibash: syntax error near unexpected token '%s'\n", token->str);
             return NULL;
         }
 
         prev_type = token->type;
 
-        if (list_push_back(&tokens_lst, list_new(token)) != 0) {
+        if (list_push_back(&token_list, list_new(token)) != 0) {
             free_token(token);
-            list_clear(tokens_lst, free_token);
+            list_clear(token_list, free_token);
             perror("minibash: malloc");
             return NULL;
         }
@@ -76,10 +77,10 @@ list_t* lexer(char* str) {
     }
 
     if (prev_type != WORD) {
-        list_clear(tokens_lst, free_token);
+        list_clear(token_list, free_token);
         fprintf(stderr, "minibash: syntax error near unexpected token 'newline'\n");
         return NULL;
     }
 
-    return tokens_lst;
+    return token_list;
 }

@@ -2,14 +2,14 @@
 
 /*
  * @brief Frees a token
- * @param data The token to free
+ * @param ptr The token to free
  * @note Used in list_free
  **/
-void free_token(void* data) {
-    if (data == NULL)
+void free_token(void* ptr) {
+    if (ptr == NULL)
         return;
 
-    token_t* token = data;
+    token_t* token = ptr;
 
     free(token->str);
     free(token);

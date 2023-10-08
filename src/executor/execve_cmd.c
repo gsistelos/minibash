@@ -1,7 +1,5 @@
 #include "minibash.h"
 
-extern char** environ;
-
 /*
  * @brief Executes a command using execve
  * @param cmd The command to execute
