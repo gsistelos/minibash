@@ -15,13 +15,16 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "libgs.h"
-
 enum token_type_e {
     WORD,
     REDIR,
     PIPE
 };
+
+typedef struct list_s {
+    void* data;
+    struct list_s* next;
+} list_t;
 
 typedef struct token_s {
     char* str;
@@ -69,10 +72,19 @@ int setup_signals(void);
 void free_cmd(void* ptr);
 void free_token(void* ptr);
 char* get_path(char* cmd);
+void list_clear(list_t* list, void (*func)(void*));
+void list_free(list_t* list, void (*func)(void*));
+list_t* list_last(list_t* list);
+list_t* list_new(void* data);
+int list_push_back(list_t** list, list_t* new);
+size_t list_size(list_t* list);
+void matrix_free(void** matrix);
 cmd_t* new_cmd(char** args, int input, int output);
 token_t* new_token(char* str);
 ssize_t quotes_len(char* str);
 char* skip_whitespaces(char* str);
+char** split(const char* str, char delim);
+char* strjoin(const char* s1, const char* s2);
 
 extern int g_status_code;
 
