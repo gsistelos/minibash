@@ -1,3 +1,0 @@
-[submodule "libgs"]
-	path = libgs
-	url = git@github.com:gsistelos/libgs.git
