@@ -10,6 +10,7 @@ A simple bash-like command-line interpreter
 - Environment variables
 - Variables expansion
 - Pipes
+- Built-ins
 
 ## Dependencies
 
