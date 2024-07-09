@@ -7,8 +7,10 @@
  **/
 int builtin_env(cmd_t *cmd) {
     for (size_t i = 0; environ[i]; i++) {
-        write(cmd->output, environ[i], strlen(environ[i]));
-        write(cmd->output, "\n", 1);
+        if (write(cmd->output, environ[i], strlen(environ[i])))
+          return 1;
+        if (write(cmd->output, "\n", 1))
+          return 1;
     }
 
     return 0;

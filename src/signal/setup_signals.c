@@ -7,8 +7,12 @@ void sighandler(int signo) {
         g_status_code = 1;
         if (ioctl(1, TIOCSTI, "\n") != 0)
             perror("minibash: ioctl");
-    } else
-        write(1, "\n", 1);
+    } else {
+        if (write(1, "\n", 1)) {
+          perror("minibash: write");
+          return;
+        }
+    }
 
     rl_replace_line("", 0);
     rl_on_new_line();
