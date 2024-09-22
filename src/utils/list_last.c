@@ -1,5 +1,7 @@
 #include "minibash.h"
 
+#include <stddef.h>
+
 /*
  * @brief Get the last node of a list
  * @param list The list

@@ -1,5 +1,7 @@
 #include "minibash.h"
 
+#include <string.h>
+
 /*
  * @brief Get a pointer to a builtin function
  * @param cmd The command name

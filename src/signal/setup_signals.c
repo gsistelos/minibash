@@ -1,5 +1,12 @@
 #include "minibash.h"
 
+#include <signal.h>
+#include <stdio.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+
+#include <readline/readline.h>
+
 void sighandler(int signo) {
     (void)signo;
 
@@ -9,8 +16,8 @@ void sighandler(int signo) {
             perror("minibash: ioctl");
     } else {
         if (write(1, "\n", 1)) {
-          perror("minibash: write");
-          return;
+            perror("minibash: write");
+            return;
         }
     }
 

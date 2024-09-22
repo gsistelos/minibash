@@ -1,5 +1,9 @@
 #include "minibash.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
 /*
  * @brief Builtin cd
  * @param cmd The command to execute

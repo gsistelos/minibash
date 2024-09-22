@@ -1,5 +1,7 @@
 #include "minibash.h"
 
+#include <stdlib.h>
+
 /*
  * @brief Frees a command
  * @param ptr The command to free

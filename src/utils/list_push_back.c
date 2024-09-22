@@ -1,5 +1,7 @@
 #include "minibash.h"
 
+#include <stddef.h>
+
 /*
  * @brief Push a node at the end of a list
  * @param list The list

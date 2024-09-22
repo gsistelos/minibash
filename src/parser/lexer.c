@@ -1,5 +1,15 @@
 #include "minibash.h"
 
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+static list_t* syntax_error(char* str) {
+    fprintf(stderr, "minibash: syntax error near unexpected token '%s'\n", str);
+    return NULL;
+}
+
 /*
  * @brief Get the length of the next token in a string
  * @param str The string to get the token length from
@@ -56,11 +66,11 @@ list_t* lexer(char* str) {
             return NULL;
         }
 
-        if ((prev_type == REDIR && token->type != WORD) || (prev_type == PIPE && token->type == PIPE)) {
+        if ((prev_type == REDIR && token->type != WORD) ||
+            (prev_type == PIPE && token->type == PIPE)) {
             list_clear(token_list, free_token);
             free_token(token);
-            fprintf(stderr, "minibash: syntax error near unexpected token '%s'\n", token->str);
-            return NULL;
+            return syntax_error(token->str);
         }
 
         prev_type = token->type;
@@ -78,8 +88,7 @@ list_t* lexer(char* str) {
 
     if (prev_type != WORD) {
         list_clear(token_list, free_token);
-        fprintf(stderr, "minibash: syntax error near unexpected token 'newline'\n");
-        return NULL;
+        return syntax_error("newline");
     }
 
     return token_list;

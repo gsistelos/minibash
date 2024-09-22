@@ -1,5 +1,20 @@
 #include "minibash.h"
 
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#include <readline/readline.h>
+
+static void eof_warning(size_t line, char* wanted) {
+    fprintf(stderr,
+            "minibash: warning: here-document at line %li delimited by "
+            "end-of-file (wanted '%s')\n",
+            line, wanted);
+}
+
 /*
  * @brief Reads from stdin until the end of the heredoc is reached
  * @param end The end of the heredoc
@@ -21,7 +36,7 @@ static int heredoc(char* end) {
         }
 
         if (line == NULL) {
-            fprintf(stderr, "\nminibash: warning: here-document at line %li delimited by end-of-file (wanted '%s')\n", i, end);
+            eof_warning(i, end);
             break;
         }
 
@@ -73,11 +88,13 @@ static int redirect(list_t* token_list, int* input, int* output) {
 }
 
 /*
- * @brief Iterate over the token list until a pipe is found, setting the input and output
+ * @brief Iterate over the token list until a pipe
+ *        is found, setting the input and output
  * @param token_list The token list
  * @param input A pointer to the input fd
  * @param output A pointer to the output fd
- * @return Quantity of non redirect tokens until the pipe or -1 if an error occured
+ * @return Quantity of non redirect tokens until
+ *         the pipe or -1 if an error occured
  **/
 static ssize_t redirect_to_pipe(list_t* token_list, int* input, int* output) {
     ssize_t len = 0;
@@ -100,7 +117,8 @@ static ssize_t redirect_to_pipe(list_t* token_list, int* input, int* output) {
 }
 
 /*
- * @brief Copy the non redirect tokens from the token list to an array and walk the token list head to the next pipe or NULL
+ * @brief Copy the non redirect tokens from the token list to
+ *        an array and walk the token list head to the next pipe or NULL
  * @param token_list The token list
  * @param len The quantity of non redirect arguments to copy
  * @return The arguments array or NULL if an error occured

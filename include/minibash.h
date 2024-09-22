@@ -1,25 +1,9 @@
 #ifndef MINIBASH_H
 #define MINIBASH_H
 
-#include <ctype.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <stdio.h>
-#include <readline/history.h>
-#include <readline/readline.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/ioctl.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
-#include <unistd.h>
+#include <sys/types.h>
 
-enum token_type_e {
-    WORD,
-    REDIR,
-    PIPE
-};
+enum token_type_e { WORD, REDIR, PIPE };
 
 typedef struct list_s {
     void* data;
@@ -90,4 +74,4 @@ extern int g_status_code;
 
 extern char** environ;
 
-#endif  // MINIBASH_H
+#endif // MINIBASH_H

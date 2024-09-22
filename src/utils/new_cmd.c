@@ -1,5 +1,7 @@
 #include "minibash.h"
 
+#include <stdlib.h>
+
 /*
  * @brief Creates a new command
  * @param args The arguments of the command

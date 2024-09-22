@@ -1,5 +1,7 @@
 #include "minibash.h"
 
+#include <stdlib.h>
+
 /*
  * @brief Frees a token
  * @param ptr The token to free

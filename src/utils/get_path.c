@@ -1,5 +1,11 @@
 #include "minibash.h"
 
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+
 int validate_path_verbose(char* path) {
     struct stat st;
 

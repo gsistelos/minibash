@@ -1,5 +1,8 @@
 #include "minibash.h"
 
+#include <stdio.h>
+#include <unistd.h>
+
 /*
  * @brief Forks, dup2s and executes a command using exec_func
  * @param exec_func The function to execute

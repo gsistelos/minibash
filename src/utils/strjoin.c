@@ -1,5 +1,8 @@
 #include "minibash.h"
 
+#include <stdlib.h>
+#include <string.h>
+
 /*
  * @brief Concatenate two strings into a new allocated string
  * @param s1 The first string

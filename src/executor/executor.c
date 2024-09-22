@@ -1,5 +1,9 @@
 #include "minibash.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
 static int set_pipes(list_t* cmd_list, int* bridge_pipe) {
     cmd_t* cmd = cmd_list->data;
 

@@ -1,5 +1,7 @@
 #include "minibash.h"
 
+#include <sys/wait.h>
+
 void wait_pids(pid_t* pid, size_t size) {
     int status;
 

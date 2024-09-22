@@ -1,5 +1,7 @@
 #include "minibash.h"
 
+#include <stdlib.h>
+
 /*
  * @brief Free a matrix of pointers
  * @param matrix The matrix to free

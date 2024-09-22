@@ -1,5 +1,8 @@
 #include "minibash.h"
 
+#include <stdlib.h>
+#include <string.h>
+
 static size_t substrings(const char* str, char delim) {
     size_t size = 0;
 

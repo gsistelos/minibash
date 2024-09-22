@@ -1,5 +1,9 @@
 #include "minibash.h"
 
+#include <errno.h>
+#include <stdio.h>
+#include <unistd.h>
+
 /*
  * @brief Executes a command using execve
  * @param cmd The command to execute

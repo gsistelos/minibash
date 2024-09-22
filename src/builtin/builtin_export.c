@@ -1,5 +1,9 @@
 #include "minibash.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 /*
  * @brief Export a variable
  * @param cmd The command to execute

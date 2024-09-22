@@ -1,5 +1,8 @@
 #include "minibash.h"
 
+#include <stdlib.h>
+#include <string.h>
+
 /*
  * @brief Creates a new token
  * @param str The string to create the token from

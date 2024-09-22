@@ -1,5 +1,7 @@
 #include "minibash.h"
 
+#include <stddef.h>
+
 /*
  * @brief Parse a string into a list of commands
  * @param str The string to parse

@@ -1,5 +1,7 @@
 #include "minibash.h"
 
+#include <stdlib.h>
+
 /*
  * @brief Free a node of the list
  * @param list The node to free

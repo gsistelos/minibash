@@ -1,5 +1,7 @@
 #include "minibash.h"
 
+#include <stddef.h>
+
 /*
  * @brief Run a command
  * @param cmd_list The command

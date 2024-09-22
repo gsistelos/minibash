@@ -1,5 +1,10 @@
 #include "minibash.h"
 
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 static int apply_expansion(char** new_str, char* aux) {
     if (aux != NULL) {
         char* tmp = strjoin(*new_str, aux);

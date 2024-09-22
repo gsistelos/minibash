@@ -1,5 +1,7 @@
 #include "minibash.h"
 
+#include <ctype.h>
+
 /*
  * @brief Skips all whitespaces in the input string
  * @param str The input string
