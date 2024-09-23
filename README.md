@@ -17,7 +17,7 @@ A simple bash-like command-line interpreter
 GNU Readline Library
 
 ```sh
-sudo apt install libreadline-dev
+sudo apt install git make libreadline-dev
 ```
 
 ## Compilation
