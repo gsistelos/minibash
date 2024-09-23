@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-static int set_pipes(list_t* cmd_list, int* bridge_pipe) {
-    cmd_t* cmd = cmd_list->data;
+static int set_pipes(t_node* cmd_node, int* bridge_pipe) {
+    cmd_t* cmd = cmd_node->data;
 
     if (*bridge_pipe != -1) {
         if (cmd->input == STDIN_FILENO)
@@ -14,7 +14,7 @@ static int set_pipes(list_t* cmd_list, int* bridge_pipe) {
             close(*bridge_pipe);
     }
 
-    if (cmd_list->next == NULL) {
+    if (cmd_node->next == NULL) {
         *bridge_pipe = -1;
         return 0;
     }
@@ -35,7 +35,7 @@ static int set_pipes(list_t* cmd_list, int* bridge_pipe) {
     return 0;
 }
 
-static pid_t run_multiple(list_t* cmd_list, size_t size) {
+static pid_t run_multiple(t_node* cmd_node, size_t size) {
     int bridge_pipe = -1;
 
     pid_t* pid = malloc(sizeof(pid_t) * size);
@@ -44,11 +44,11 @@ static pid_t run_multiple(list_t* cmd_list, size_t size) {
         return 1;
     }
 
-    for (size_t i = 0; cmd_list; i++) {
-        if (set_pipes(cmd_list, &bridge_pipe) != 0)
+    for (size_t i = 0; cmd_node; i++) {
+        if (set_pipes(cmd_node, &bridge_pipe) != 0)
             return 1;
 
-        cmd_t* cmd = cmd_list->data;
+        cmd_t* cmd = cmd_node->data;
 
         int (*exec_func)(cmd_t*) = get_builtin(cmd->args[0]);
         if (exec_func == NULL)
@@ -60,7 +60,7 @@ static pid_t run_multiple(list_t* cmd_list, size_t size) {
             return 0;
         }
 
-        cmd_list = cmd_list->next;
+        cmd_node = cmd_node->next;
     }
 
     wait_pids(pid, size);
@@ -74,14 +74,12 @@ static pid_t run_multiple(list_t* cmd_list, size_t size) {
  * @param cmd_list The list of commands
  * @return 0 if the current process is the child, 1 if it's the parent
  **/
-pid_t executor(list_t* cmd_list) {
-    size_t size = list_size(cmd_list);
-
-    if (size == 1) {
-        if (run_cmd(cmd_list->data) == 0)
+pid_t executor(t_lst* cmd_list) {
+    if (cmd_list->size == 1) {
+        if (run_cmd(cmd_list->head->data) == 0)
             return 0;
     } else {
-        if (run_multiple(cmd_list, size) == 0)
+        if (run_multiple(cmd_list->head, cmd_list->size) == 0)
             return 0;
     }
 

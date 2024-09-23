@@ -3,3 +3,5 @@
 -Wextra
 -O3
 -Iinclude
+-Ilibgs/include
+-Iliblst/include

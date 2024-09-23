@@ -35,13 +35,13 @@ int main(void) {
         if (errno != 0)
             perror("minibash: add_history");
 
-        list_t* cmd_list = parser(line_start);
+        t_lst* cmd_list = parser(line_start);
         free(line);
         if (cmd_list == NULL)
             continue;
 
         pid_t pid = executor(cmd_list);
-        list_clear(cmd_list, free_cmd);
+        lst_del(cmd_list, free_cmd);
         if (pid == 0)
             return 1;
     }

@@ -1,4 +1,6 @@
 minibash
+libgs
+liblst
 
 # Prerequisites
 *.d

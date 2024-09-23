@@ -11,14 +11,14 @@ static int ambigous_redirect(char* str) {
 
 /*
  * @brief Expand all the tokens->str in the list
- * @param token_list The list of tokens
+ * @param token_node Head of the list of tokens
  * @return 0 on success, 1 on error
  **/
-int expansor(list_t* token_list) {
+int expansor(t_node* token_node) {
     int prev_type = PIPE;
 
-    while (token_list) {
-        token_t* token = token_list->data;
+    while (token_node) {
+        token_t* token = token_node->data;
 
         if (token->type == WORD) {
             char* new_str = expand(token->str);
@@ -33,7 +33,7 @@ int expansor(list_t* token_list) {
         }
 
         prev_type = token->type;
-        token_list = token_list->next;
+        token_node = token_node->next;
     }
 
     return 0;

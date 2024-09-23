@@ -1,3 +1,4 @@
+#include "liblst.h"
 #include "minibash.h"
 
 #include <ctype.h>
@@ -5,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static list_t* syntax_error(char* str) {
+static t_lst* syntax_error(char* str) {
     fprintf(stderr, "minibash: syntax error near unexpected token '%s'\n", str);
     return NULL;
 }
@@ -40,20 +41,21 @@ static ssize_t token_len(char* str) {
  * @param str The input string
  * @return A list of tokens, NULL on failure
  **/
-list_t* lexer(char* str) {
-    list_t* token_list = NULL;
+t_lst* lexer(char* str) {
+    t_lst* token_list = lst_new();
+
     int prev_type = PIPE;
 
     while (*str) {
         ssize_t len = token_len(str);
         if (len == -1) {
-            list_clear(token_list, free_token);
+            lst_del(token_list, free_token);
             return NULL;
         }
 
         char* token_str = strndup(str, len);
         if (token_str == NULL) {
-            list_clear(token_list, free_token);
+            lst_del(token_list, free_token);
             perror("minibash: malloc");
             return NULL;
         }
@@ -61,23 +63,23 @@ list_t* lexer(char* str) {
         token_t* token = new_token(token_str);
         if (token == NULL) {
             free(token_str);
-            list_clear(token_list, free_token);
+            lst_del(token_list, free_token);
             perror("minibash: malloc");
             return NULL;
         }
 
         if ((prev_type == REDIR && token->type != WORD) ||
             (prev_type == PIPE && token->type == PIPE)) {
-            list_clear(token_list, free_token);
+            lst_del(token_list, free_token);
             free_token(token);
             return syntax_error(token->str);
         }
 
         prev_type = token->type;
 
-        if (list_push_back(&token_list, list_new(token)) != 0) {
+        if (lst_push_back(token_list, token) != 0) {
             free_token(token);
-            list_clear(token_list, free_token);
+            lst_del(token_list, free_token);
             perror("minibash: malloc");
             return NULL;
         }
@@ -87,7 +89,7 @@ list_t* lexer(char* str) {
     }
 
     if (prev_type != WORD) {
-        list_clear(token_list, free_token);
+        lst_del(token_list, free_token);
         return syntax_error("newline");
     }
 

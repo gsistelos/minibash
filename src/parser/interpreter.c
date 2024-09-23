@@ -1,3 +1,4 @@
+#include "liblst.h"
 #include "minibash.h"
 
 #include <errno.h>
@@ -64,9 +65,9 @@ static int heredoc(char* end) {
     return fd[0];
 }
 
-static int redirect(list_t* token_list, int* input, int* output) {
-    token_t* redir = token_list->data;
-    token_t* file = token_list->next->data;
+static int redirect(t_node* token_node, int* input, int* output) {
+    token_t* redir = token_node->data;
+    token_t* file = token_node->next->data;
 
     if (strcmp(redir->str, ">>") == 0)
         *output = open(file->str, O_WRONLY | O_APPEND | O_CREAT, 0644);
@@ -90,27 +91,27 @@ static int redirect(list_t* token_list, int* input, int* output) {
 /*
  * @brief Iterate over the token list until a pipe
  *        is found, setting the input and output
- * @param token_list The token list
+ * @param token_node Head of the token list
  * @param input A pointer to the input fd
  * @param output A pointer to the output fd
  * @return Quantity of non redirect tokens until
  *         the pipe or -1 if an error occured
  **/
-static ssize_t redirect_to_pipe(list_t* token_list, int* input, int* output) {
+static ssize_t redirect_to_pipe(t_node* token_node, int* input, int* output) {
     ssize_t len = 0;
-    while (token_list) {
-        token_t* token = token_list->data;
+    while (token_node) {
+        token_t* token = token_node->data;
         if (token->type == PIPE)
             break;
 
         if (token->type == REDIR) {
-            if (redirect(token_list, input, output) != 0)
+            if (redirect(token_node, input, output) != 0)
                 return -1;
-            token_list = token_list->next;
+            token_node = token_node->next;
         } else if (token->str != NULL)
             len++;
 
-        token_list = token_list->next;
+        token_node = token_node->next;
     }
 
     return len;
@@ -119,11 +120,11 @@ static ssize_t redirect_to_pipe(list_t* token_list, int* input, int* output) {
 /*
  * @brief Copy the non redirect tokens from the token list to
  *        an array and walk the token list head to the next pipe or NULL
- * @param token_list The token list
+ * @param token_node Head of the token list
  * @param len The quantity of non redirect arguments to copy
  * @return The arguments array or NULL if an error occured
  **/
-char** copy_args(list_t** token_list, ssize_t len) {
+static char** copy_args(t_node** token_node, ssize_t len) {
     char** args = malloc(sizeof(char*) * (len + 1));
     if (args == NULL) {
         perror("minibash: malloc");
@@ -131,26 +132,26 @@ char** copy_args(list_t** token_list, ssize_t len) {
     }
 
     size_t i = 0;
-    while (*token_list) {
-        token_t* token = (*token_list)->data;
+    while (*token_node) {
+        token_t* token = (*token_node)->data;
         if (token->type == PIPE) {
-            *token_list = (*token_list)->next;
+            *token_node = (*token_node)->next;
             break;
         }
 
         if (token->type == REDIR)
-            *token_list = (*token_list)->next;
+            *token_node = (*token_node)->next;
         else if (token->str != NULL) {
             args[i] = strdup(token->str);
             if (args[i] == NULL) {
-                matrix_free((void**)args);
+                gs_matrix_free((void**)args);
                 perror("minibash: malloc");
                 return NULL;
             }
             i++;
         }
 
-        *token_list = (*token_list)->next;
+        *token_node = (*token_node)->next;
     }
 
     args[len] = NULL;
@@ -160,39 +161,39 @@ char** copy_args(list_t** token_list, ssize_t len) {
 
 /*
  * @brief Create a cmd list from a token list
- * @param tokens_list The token list
+ * @param tokens_node Head of the token list
  * @return The cmd list or NULL if an error occured
  **/
-list_t* interpreter(list_t* token_list) {
-    list_t* cmd_list = NULL;
+t_lst* interpreter(t_node* token_node) {
+    t_lst* cmd_list = lst_new();
 
-    while (token_list) {
+    while (token_node) {
         int input = STDIN_FILENO;
         int output = STDOUT_FILENO;
 
-        ssize_t args_len = redirect_to_pipe(token_list, &input, &output);
+        ssize_t args_len = redirect_to_pipe(token_node, &input, &output);
         if (args_len == -1) {
-            list_clear(cmd_list, free_cmd);
+            lst_del(cmd_list, free_cmd);
             return NULL;
         }
 
-        char** args = copy_args(&token_list, args_len);
+        char** args = copy_args(&token_node, args_len);
         if (args == NULL) {
-            list_clear(cmd_list, free_cmd);
+            lst_del(cmd_list, free_cmd);
             return NULL;
         }
 
         cmd_t* cmd = new_cmd(args, input, output);
         if (cmd == NULL) {
-            matrix_free((void**)args);
-            list_clear(cmd_list, free_cmd);
+            gs_matrix_free((void**)args);
+            lst_del(cmd_list, free_cmd);
             perror("minibash: malloc");
             return NULL;
         }
 
-        if (list_push_back(&cmd_list, list_new(cmd)) != 0) {
+        if (lst_push_back(cmd_list, cmd) != 0) {
             free_cmd(cmd);
-            list_clear(cmd_list, free_cmd);
+            lst_del(cmd_list, free_cmd);
             perror("minibash: malloc");
             return NULL;
         }

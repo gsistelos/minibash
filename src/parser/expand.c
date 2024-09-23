@@ -7,7 +7,7 @@
 
 static int apply_expansion(char** new_str, char* aux) {
     if (aux != NULL) {
-        char* tmp = strjoin(*new_str, aux);
+        char* tmp = gs_strjoin(*new_str, aux);
         free(aux);
         if (tmp == NULL) {
             perror("minibash: malloc");

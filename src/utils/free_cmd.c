@@ -13,6 +13,6 @@ void free_cmd(void* ptr) {
 
     cmd_t* cmd = ptr;
 
-    matrix_free((void**)cmd->args);
+    gs_matrix_free((void**)cmd->args);
     free(cmd);
 }
