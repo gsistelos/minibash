@@ -4,7 +4,7 @@
 
 /*
  * @brief Run a command
- * @param cmd_list The command
+ * @param cmd The command
  * @return 0 if the process is a child, 1 otherwise
  **/
 pid_t run_cmd(cmd_t* cmd) {
